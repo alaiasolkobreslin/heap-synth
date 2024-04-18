@@ -36,8 +36,6 @@ let rec vars_hpredicate_spatial = function
 let ghost_vars gamma (p:hpredicate) (q:hpredicate) =
   let ghost_vars_p_pure = vars_hpredicate_pure (fst p) in
   let ghost_vars_p_spatial = vars_hpredicate_spatial (snd p) in
-  (* let vars_q_pure = vars_hpredicate_pure (fst q) in *)
-  (* let vars_q_spatial = vars_hpredicate_spatial (snd q) in *)
   IdSet.diff (IdSet.union ghost_vars_p_pure ghost_vars_p_spatial) gamma
 
 let existential_vars gamma (p:hpredicate) (q:hpredicate) =
