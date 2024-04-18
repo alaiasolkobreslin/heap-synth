@@ -1,0 +1,14 @@
+*.zip
+
+# OCaml
+*.cmo
+*.cma
+*.cmi
+*.cmx
+*.native
+*.byte
+_build
+
+# Assembly
+*.s
+*.o
