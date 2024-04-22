@@ -23,7 +23,6 @@ type cmd =
   | CPtrAssign of expr * expr (* store *)
   | CSeq of cmd * cmd
   | CIf of expr * cmd * cmd
-  | CWhile of expr * cmd
   | CAlloc of id * expr
   | CFree of expr
   | CHole

@@ -19,7 +19,6 @@ let rec vars_prog = function
   | CPtrAssign (_, _) -> IdSet.empty (* TODO: is this correct? *)
   | CSeq (p, q)
   | CIf (_, p, q) -> IdSet.union (vars_prog p) (vars_prog q)
-  | CWhile (_, p) -> vars_prog p
   | _ -> raise (Failure "Not implemented")
 
 let rec vars_expr = function
