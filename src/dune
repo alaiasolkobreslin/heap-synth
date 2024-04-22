@@ -6,4 +6,4 @@
 (library
  (name heap_synth)
  (public_name heap_synth)
- (libraries yojson nice_parser core_kernel))
+ (libraries yojson nice_parser core_kernel z3))

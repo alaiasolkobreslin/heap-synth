@@ -1,4 +1,5 @@
 open Ast
+open Logic
 
 module IdSet = Set.Make(String)
 
@@ -67,8 +68,6 @@ let existential_vars gamma (p:hpredicate) (q:hpredicate) =
 (* let profiles_match (pre:hpredicate) (post:hpredicate) (exact:bool) =
   if exact then pre.profile.apps = post.profile.apps else multiSubset post.profile.apps pre.profile.apps *)
 
-let implies phi psi =
-  raise (Failure "implies: not implemented")
 
 let apply_emp_rule (goal:goal) =
   let pre = goal.pre in
