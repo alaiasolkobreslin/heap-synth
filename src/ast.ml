@@ -14,7 +14,6 @@ type expr =
   | EAnd of expr * expr
   | EOr of expr * expr
   | ENot of expr
-  | ERef of expr
   | EDeref of expr
 
 type cmd =

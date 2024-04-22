@@ -1,9 +1,3 @@
-; (ocamllex
-;  (modules lexer))
-
-; (menhir
-;  (modules parser))
-
 (env
  (dev
   (flags

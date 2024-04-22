@@ -28,7 +28,6 @@ let rec vars_expr = function
   | EMul (e1, e2) 
   | EAnd (e1, e2)
   | EOr (e1, e2) -> IdSet.union (vars_expr e1) (vars_expr e2)
-  | ERef e
   | EDeref e 
   | ENot e -> vars_expr e
   | EInt _

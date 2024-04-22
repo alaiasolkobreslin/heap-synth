@@ -26,20 +26,25 @@ let rec interp_expr expr env heap : result = match expr with
   | EAnd (e1, e2) -> RBool (interp_expr e1 env heap |> unwrap_bool && interp_expr e2 env heap |> unwrap_bool)
   | ENot e -> RBool (interp_expr e env heap |> unwrap_bool |> not)
   | EId x -> Hashtbl.find env x
-  | EDeref (EId x) -> Hashtbl.find heap x
-  | EDeref _ -> failwith "Not implemented"
-  | ERef x -> failwith "Not implemented"
+  | EDeref (EId x) ->
+      let loc = Hashtbl.find env x in
+      Hashtbl.find heap (unwrap_int loc)
+  | EDeref _ -> failwith "Attempted to deference a non-variable"
 
 let rec interp_cmd cmd env heap : unit = match cmd with
   | CSkip -> ()
   | CLetAssign (x, e) -> Hashtbl.replace env x (interp_expr e env heap)
-  | CPtrAssign (e1, e2) -> failwith "Not implemented"
+  | CPtrAssign (EId x, e2) ->
+    begin
+      match Hashtbl.find_opt env x with
+      | Some loc -> Hashtbl.replace heap (unwrap_int loc) (interp_expr e2 env heap)
+      | None -> let v = new_var () in
+                Hashtbl.replace env x (RInt v);
+                Hashtbl.replace heap v (interp_expr e2 env heap)
+    end
   | CSeq (c1, c2) -> interp_cmd c1 env heap; interp_cmd c2 env heap
   | CIf (e, c1, c2) -> if interp_expr e env heap |> unwrap_bool then interp_cmd c1 env heap else interp_cmd c2 env heap
   | CAlloc (x, e) -> failwith "Not implemented"
   | CFree e -> failwith "Not implemented"
-  | CHole -> failwith "Not implemented"
-
-
-(* let initial_env = create 10
-let initial_heap = create 10 *)
+  | CHole -> failwith "Hole not filled"
+  | CPtrAssign _ -> failwith "Attempted to assign to a non-variable"
