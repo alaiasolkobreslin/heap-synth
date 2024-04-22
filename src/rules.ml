@@ -92,7 +92,7 @@ let apply_write_rule (goal:goal) = failwith "unimplemented"
 let apply_frame_rule (goal:goal) =
   let pre = goal.pre in
   let post = goal.post in
-
+  failwith "unimplemented"
 
 let apply_rule rule (goal:goal) =
   match rule with
