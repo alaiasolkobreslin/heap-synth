@@ -2,38 +2,6 @@ open OUnit2
 open Heap_synth.Ast
 open Heap_synth.Interp
 
-(* let compare_files f1 f2 = 
-  let in_chan_f1 = open_in f1 in
-  let in_chan_f2 = open_in f2 in
-  let lines_f1 = ref [] in
-  let lines_f2 = ref [] in
-  try
-    while true; do
-      lines_f1 := input_line in_chan_f1 :: !lines_f1;
-      lines_f2 := input_line in_chan_f2 :: !lines_f2
-    done; lines_f1 = lines_f2
-  with End_of_file ->
-    close_in in_chan_f1;
-    close_in in_chan_f2;
-    lines_f1 = lines_f2
-
-let make_lex_file_test
-    (name : string)
-    (input_file : string)
-    (expected_file : string) : test = 
-  name >:: (fun _ ->
-      print_endline "uwu";
-      write_out_file lex_channel "" input_file ".lexed";
-      match chop_file input_file ".lexed" with
-      | Some file -> assert_equal file 
-                       expected_file ~cmp:compare_files
-      | None -> assert_equal true false)
-
-let lexer_tests = [
-  make_lex_file_test "functions.haze" "tests/pa1/functions.haze"
-    "tests/pa1/functions.lexedsol";
-] *)
-
 let make_interpret_expr_test
     (name: string)
     (expr: expr)
@@ -56,6 +24,6 @@ let interpret_tests = [
   make_interpret_expr_test "not" (ENot (EBool true)) empty_env empty_heap (RBool false);
 ]
 
-let suite = "test suite for Hazel" >::: List.flatten [interpret_tests]
+let suite = "test suite" >::: List.flatten [interpret_tests]
 
 let _ = run_test_tt_main suite
