@@ -6,23 +6,27 @@ type env = IdSet.t
 
 type expr =
   | EInt of int
-  | EBool of bool
+  | EBool of int
   | EId of id
   | EAdd of expr * expr
   | ESub of expr * expr
   | EMul of expr * expr
+  | EAnd of expr * expr
+  | EOr of expr * expr
+  | ENot of expr
   | ERef of expr
   | EDeref of expr
 
 type cmd =
   | CSkip
-  | CLetAssign of id * expr
-  | CPtrAssign of expr * expr
+  | CLetAssign of id * expr (* load *)
+  | CPtrAssign of expr * expr (* store *)
   | CSeq of cmd * cmd
   | CIf of expr * cmd * cmd
   | CWhile of expr * cmd
   | CAlloc of id * expr
   | CFree of expr
+  | CHole
 
 type prog = (* location arguments *) id list * (* program body *) cmd
 

@@ -2,6 +2,17 @@ open Ast
 
 module IdSet = Set.Make(String)
 
+type goal = {
+  pre : hpredicate;
+  post : hpredicate;
+  gamma: IdSet.t ;
+  program_vars: IdSet.t;
+  universal_ghosts : IdSet.t;
+  fname : string;
+}
+
+type rule = REmp | RRead | RWrite | RFrame
+
 let rec vars_prog = function
   | CLetAssign (x, _) -> IdSet.singleton x
   | CSkip
@@ -15,9 +26,12 @@ let rec vars_expr = function
   | EId x -> IdSet.singleton x
   | EAdd (e1, e2)
   | ESub (e1, e2)
-  | EMul (e1, e2) -> IdSet.union (vars_expr e1) (vars_expr e2)
+  | EMul (e1, e2) 
+  | EAnd (e1, e2)
+  | EOr (e1, e2) -> IdSet.union (vars_expr e1) (vars_expr e2)
   | ERef e
-  | EDeref e -> vars_expr e
+  | EDeref e 
+  | ENot e -> vars_expr e
   | EInt _
   | EBool _ -> IdSet.empty
 
@@ -50,7 +64,26 @@ let existential_vars gamma (p:hpredicate) (q:hpredicate) =
 let implies phi psi =
   raise (Failure "implies: not implemented")
 
-let emp_rule htransform =
+let apply_emp_rule (goal:goal) =
+  let pre = goal.pre in
+  let post = goal.post in
+  failwith "unimplemented"
+
+let apply_read_rule (goal:goal) = failwith "unimplemented"
+
+let apply_write_rule (goal:goal) = failwith "unimplemented"
+
+let apply_frame_rule (goal:goal) = failwith "unimplemented"
+
+
+let apply_rule rule (goal:goal) =
+  match rule with
+  | REmp -> apply_emp_rule goal
+  | RRead -> apply_read_rule goal
+  | RWrite -> apply_write_rule goal
+  | RFrame -> apply_frame_rule goal
+
+(* let emp_rule htransform =
   let pre_p_pure, pre_p_spatial = htransform.hpred_pre in
   let post_p_pure, post_p_spatial = htransform.hpred_post in
   match pre_p_spatial, post_p_spatial with
@@ -62,7 +95,7 @@ let emp_rule htransform =
         None
     else
       None
-  | _ -> None
+  | _ -> None *)
 
 (* let read_rule htransform =
   let pre_p_pure, pre_p_spatial = htransform.hpred_pre in
