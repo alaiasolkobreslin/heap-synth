@@ -42,7 +42,11 @@ type hpredicate_pure =
   | HAnd of hpredicate_pure * hpredicate_pure
   | HEq of expr * expr
 
-type hpredicate = hpredicate_pure * hpredicate_spatial
+type hpredicate = 
+{
+  pure: hpredicate_pure;
+  spatial: hpredicate_spatial;
+}
 
 type heap_transform =
   {
