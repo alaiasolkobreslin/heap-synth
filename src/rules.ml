@@ -66,7 +66,8 @@ let existential_vars gamma (p:hpredicate) (q:hpredicate) =
     if (exact) pre.profile.apps == post.profile.apps else multiSubset(post.profile.apps, pre.profile.apps)
   } *)
 
-let profiles_match pre post exact = failwith "unimplemented"
+(* let profiles_match (pre:hpredicate) (post:hpredicate) (exact:bool) =
+  if exact then pre.profile.apps = post.profile.apps else multiSubset post.profile.apps pre.profile.apps *)
 
 let implies phi psi =
   raise (Failure "implies: not implemented")
@@ -85,7 +86,9 @@ let apply_emp_rule (goal:goal) =
   else
     None
 
-let apply_read_rule (goal:goal) = failwith "unimplemented"
+let apply_read_rule (goal:goal) =
+  
+  failwith "unimplemented"
 
 let apply_write_rule (goal:goal) = failwith "unimplemented"
 

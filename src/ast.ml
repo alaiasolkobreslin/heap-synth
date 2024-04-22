@@ -6,7 +6,7 @@ type env = IdSet.t
 
 type expr =
   | EInt of int
-  | EBool of int
+  | EBool of bool
   | EId of id
   | EAdd of expr * expr
   | ESub of expr * expr
@@ -54,3 +54,8 @@ type heap_transform =
     hpred_pre: hpredicate;
     hpred_post: hpredicate;
   }
+
+type result =
+  | RBool of bool
+  | RInt of int
+  | RError
