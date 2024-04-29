@@ -85,8 +85,14 @@ let profiles_match (pre:hpredicate_spatial) (post:hpredicate_spatial) (exact:boo
 let find_matching_heaplets f is_match (pre: hpredicate_spatial) (post: hpredicate_spatial) =
   failwith "unimplemented"
 
-let find_points_to_heaplet (pre: hpredicate_spatial) = 
-  failwith "unimplemented"
+let rec find_points_to_heaplet (pre: hpredicate_spatial) = 
+  match pre with
+  | HPointsTo (x, e) -> Some (HPointsTo (x, e), HEmpty)
+  | HSeparate (p1, p2) ->
+      (match find_points_to_heaplet p1 with
+      | None -> None
+      | Some (h, p) -> Some (h, HSeparate (p, p2)))
+  | _ -> None
 
 let apply_emp_rule (goal:goal) =
   if goal.pre.spatial = HEmpty && goal.post.spatial = HEmpty then
