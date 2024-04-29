@@ -1,22 +1,21 @@
 open Ast
 open Rules
 
-let phases_enabled = true
+let all_rules = [REmp; RRead; RWrite; RFrame]
 
-let all_rules = []
+let is_invert (r: rule) : bool =
+  match r with
+  | REmp -> true
+  | _ -> false
 
-let is_invert r =
-  raise (Failure "Not implemented")
+let filter_comm (x: rule_result option) =
+  match x with
+  | None -> None
+  | Some rule_result -> failwith "unimplemented"
 
-let filter_comm x =
-  raise (Failure "Not implemented")
-
-let next_rules g =
-  raise (Failure "Not implemented")
 
 let rec solve_subgoals goals k =
-  let pick_rules g = if phases_enabled then next_rules g else all_rules in
-  let cs = List.filter_map (fun g -> synthesize g (pick_rules g)) goals in
+  let cs = List.filter_map (fun g -> synthesize g all_rules) goals in
   if List.length cs = List.length goals then Some (k cs) else None
 
 and try_alts derivs r rs g =
@@ -29,15 +28,18 @@ and try_alts derivs r rs g =
       | Some c -> Some c
     end
 
-and with_rules rs g =
+and with_rules (rs: rule list) (g: goal) =
   match rs with
   | [] -> None
   | r::rs' ->
     begin
-      match filter_comm (r g) with
+      match filter_comm (apply_rule r g) with
       | None -> with_rules rs' g
       | Some derivs -> try_alts derivs r rs' g
     end
 
-and synthesize g rules =
+and synthesize (g: goal) (rules:rule list) =
   with_rules rules g
+
+let heap_synth (g: goal) =
+  synthesize g all_rules
