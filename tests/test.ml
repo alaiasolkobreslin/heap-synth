@@ -21,6 +21,39 @@ let make_rule_test
     let result = apply_rule rule goal in
     assert_equal expected result)
 
+let make_rule_test_subgoal
+    (name: string)
+    (rule: rule)
+    (goal: goal)
+    (expected: rule_result option) =
+  name >:: (fun _ ->
+    let result = apply_rule rule goal in
+    match result, expected with
+    | Some r1, Some r2 -> assert_equal r1.subgoals r2.subgoals
+    | _ -> assert_equal expected result)
+
+let make_rule_test_producer
+    (name: string)
+    (rule: rule)
+    (goal: goal)
+    (expected: rule_result option) =
+  name >:: (fun _ ->
+    let result = apply_rule rule goal in
+    match result, expected with
+    | Some r1, Some r2 -> assert_equal r1.producer r2.producer
+    | _ -> assert_equal expected result)
+
+let make_rule_test_rule
+    (name: string)
+    (rule: rule)
+    (goal: goal)
+    (expected: rule_result option) =
+  name >:: (fun _ ->
+    let result = apply_rule rule goal in
+    match result, expected with
+    | Some r1, Some r2 -> assert_equal r1.rule r2.rule
+    | _ -> assert_equal expected result)
+
 let empty_env : (id, Heap_synth.Ast.result) Hashtbl.t = Hashtbl.create 10
 let empty_heap : (int, Heap_synth.Ast.result) Hashtbl.t = Hashtbl.create 10
 let interpret_tests = [
@@ -79,6 +112,36 @@ let frame_rule_goal2 = {
   fname = "foo";
 }
 
+let read_rule_goal = {
+  pre = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "a"), HEmpty)
+  };
+  post = {
+    pure = HTrue;
+    spatial = HEmpty
+  };
+  gamma = IdSet.singleton "a";
+  program_vars = IdSet.empty;
+  universal_ghosts = IdSet.empty;
+  fname = "foo";
+}
+
+let read_rule_subgoal = {
+  pre = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "x0"), HEmpty)
+  };
+  post = {
+    pure = HTrue;
+    spatial = HEmpty
+  };
+  gamma = IdSet.add "x0" (IdSet.singleton "a");
+  program_vars = IdSet.singleton "x0";
+  universal_ghosts = IdSet.empty;
+  fname = "foo";
+}
+
 let empty_goal_result = {
   subgoals = [];
   producer = CSkip;
@@ -91,11 +154,20 @@ let frame_rule_result = {
   rule = RFrame;
 }
 
+let read_rule_result = {
+  subgoals = [read_rule_subgoal];
+  producer = CLetAssign ("x0", EDeref (EId "x"));
+  rule = RRead;
+}
+
 
 let rules_tests = [
   make_rule_test "empty rule test" REmp empty_goal (Some empty_goal_result);
   make_rule_test "frame rule test" RFrame frame_rule_goal (Some frame_rule_result);
   make_rule_test "frame rule test 2" RFrame frame_rule_goal2 (Some frame_rule_result);
+  make_rule_test_subgoal "read rule test subgoal" RRead read_rule_goal (Some read_rule_result);
+  make_rule_test_producer "read rule test producer" RRead read_rule_goal (Some read_rule_result);
+  make_rule_test_rule "read rule test rule" RRead read_rule_goal (Some read_rule_result)
 ]
 
 let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests]

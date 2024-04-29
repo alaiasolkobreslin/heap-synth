@@ -66,3 +66,42 @@ let subst_spatial pred id1 id2 =
     | HSeparate (pred1, pred2) -> HSeparate (subst_spatial' pred1, subst_spatial' pred2)
   in
   subst_spatial' pred
+
+let rec pp_expr expr = 
+  match expr with
+  | EInt i -> string_of_int i
+  | EBool b -> string_of_bool b
+  | EId id -> id
+  | EAdd (e1, e2) -> (pp_expr e1) ^ " + " ^ (pp_expr e2)
+  | ESub (e1, e2) -> (pp_expr e1) ^ " - " ^ (pp_expr e2)
+  | EMul (e1, e2) -> (pp_expr e1) ^ " * " ^ (pp_expr e2)
+  | EAnd (e1, e2) -> (pp_expr e1) ^ " && " ^ (pp_expr e2)
+  | EOr (e1, e2) -> (pp_expr e1) ^ " || " ^ (pp_expr e2)
+  | ENot e -> "!" ^ (pp_expr e)
+  | EDeref e -> "*" ^ (pp_expr e)
+
+and pp_cmd cmd =
+  match cmd with
+  | CSkip -> "skip"
+  | CLetAssign (id, e) -> id ^ " := " ^ (pp_expr e)
+  | CPtrAssign (e1, e2) -> "*" ^ (pp_expr e1) ^ " := " ^ (pp_expr e2)
+  | CSeq (cmd1, cmd2) -> (pp_cmd cmd1) ^ "; " ^ (pp_cmd cmd2)
+  | CIf (e, cmd1, cmd2) -> "if " ^ (pp_expr e) ^ " then " ^ (pp_cmd cmd1) ^ " else " ^ (pp_cmd cmd2)
+  | CAlloc (id, e) -> "alloc " ^ id ^ " := " ^ (pp_expr e)
+  | CFree e -> "free " ^ (pp_expr e)
+  | CHole -> "hole"
+
+let pp_hpredicate hpred =
+  let rec pp_hpredicate_spatial pred = match pred with
+    | HEmpty -> "emp"
+    | HPure e -> (pp_expr e)
+    | HPointsTo (id, id') -> id ^ " -> " ^ id'
+    | HSeparate (pred1, pred2) -> (pp_hpredicate_spatial pred1) ^ " * " ^ (pp_hpredicate_spatial pred2)
+  in
+  let rec pp_hpredicate_pure pred = match pred with
+    | HTrue -> "true"
+    | HFalse -> "false"
+    | HAnd (pred1, pred2) -> (pp_hpredicate_pure pred1) ^ " /\\ " ^ (pp_hpredicate_pure pred2)
+    | HEq (e1, e2) -> (pp_expr e1) ^ " = " ^ (pp_expr e2)
+  in
+  (pp_hpredicate_pure hpred.pure) ^ " * " ^ (pp_hpredicate_spatial hpred.spatial)

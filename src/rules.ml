@@ -107,7 +107,8 @@ let apply_read_rule (goal:goal) =
       let new_post_spatial = subst_spatial goal.post.spatial x y in
       let new_post = { pure = new_post_pure; spatial = new_post_spatial } in
       let new_goal = { pre = new_pre; post = new_post; gamma = goal.gamma; program_vars = new_program_vars; universal_ghosts = goal.universal_ghosts; fname = goal.fname } in
-      Some { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead }
+      let new_goal = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
+      Some new_goal
   | _ -> failwith "invalid return value for find_points_to_heaplet"
 
 
