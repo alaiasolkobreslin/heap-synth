@@ -57,3 +57,12 @@ type result =
   | RBool of bool
   | RInt of int
   | RError
+
+let subst_spatial pred id1 id2 =
+  let rec subst_spatial' pred = match pred with
+    | HEmpty -> HEmpty
+    | HPure e -> HPure e
+    | HPointsTo (id, id') -> HPointsTo (id, if id' = id1 then id2 else id')
+    | HSeparate (pred1, pred2) -> HSeparate (subst_spatial' pred1, subst_spatial' pred2)
+  in
+  subst_spatial' pred
