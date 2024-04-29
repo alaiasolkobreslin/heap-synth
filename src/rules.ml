@@ -133,7 +133,7 @@ let apply_write_rule (goal:goal) =
       Some { subgoals = [new_goal]; producer = CPtrAssign (EId x, EId e); rule = RWrite }
   | _ -> None
 
-let apply_frame_rule (goal:goal) =
+(* let apply_frame_rule (goal:goal) =
   if not (profiles_match goal.pre.spatial goal.post.spatial true) then
     None
   else
@@ -146,7 +146,28 @@ let apply_frame_rule (goal:goal) =
         let new_pre = { goal.pre with spatial = new_pre_spatial } in
         let new_post = { goal.post with spatial = new_post_spatial } in
         let new_goal = { goal with pre = new_pre; post = new_post } in
-        Some { subgoals = [new_goal]; producer = CSkip; rule = RFrame }
+        Some { subgoals = [new_goal]; producer = CSkip; rule = RFrame } *)
+
+let apply_frame_rule (goal:goal) =
+  let rec find_matching_separate (p1: hpredicate_spatial) (p2: hpredicate_spatial) =
+    match p1, p2 with
+    | HSeparate (p, r1), HSeparate (q, r2) ->
+        begin
+        if r1 = r2 then Some (p, q, r1) else
+          match find_matching_separate r1 r2 with
+          | Some (p', q', r) -> Some (HSeparate (p, HSeparate(p', r)), HSeparate (q, HSeparate(q', r)), r)
+          | None -> None
+        end
+    | _ -> None in
+  match find_matching_separate goal.pre.spatial goal.post.spatial with
+  | None -> None
+  | Some (p, q, r) ->
+      let new_pre_spatial = p in
+      let new_post_spatial = q in
+      let new_pre = { goal.pre with spatial = new_pre_spatial } in
+      let new_post = { goal.post with spatial = new_post_spatial } in
+      let new_goal = { goal with pre = new_pre; post = new_post } in
+      Some { subgoals = [new_goal]; producer = CSkip; rule = RFrame }
 
 let apply_rule (rule:rule) (goal:goal) =
   match rule with
