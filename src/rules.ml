@@ -121,21 +121,6 @@ let apply_write_rule (goal:goal) =
       Some { subgoals = [new_goal]; producer = CPtrAssign (EId x, EId e); rule = RWrite }
   | _ -> None
 
-(* let apply_frame_rule (goal:goal) =
-  if not (profiles_match goal.pre.spatial goal.post.spatial true) then
-    None
-  else
-    let is_match = true in
-    match find_matching_heaplets (fun x -> true) is_match goal.pre.spatial goal.post.spatial with
-    | None -> None
-    | Some (h_pre, h_post) ->
-        let new_pre_spatial = remove_spatial_predicate goal.pre.spatial h_pre in
-        let new_post_spatial = remove_spatial_predicate goal.post.spatial h_post in
-        let new_pre = { goal.pre with spatial = new_pre_spatial } in
-        let new_post = { goal.post with spatial = new_post_spatial } in
-        let new_goal = { goal with pre = new_pre; post = new_post } in
-        Some { subgoals = [new_goal]; producer = CSkip; rule = RFrame } *)
-
 let apply_frame_rule (goal:goal) =
   let rec find_matching_separate (p1: hpredicate_spatial) (p2: hpredicate_spatial) =
     match p1, p2 with
