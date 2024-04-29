@@ -123,7 +123,15 @@ let apply_read_rule (goal:goal) =
   | _ -> failwith "invalid return value for find_points_to_heaplet"
 
 
-let apply_write_rule (goal:goal) = failwith "unimplemented"
+let apply_write_rule (goal:goal) =
+  match find_points_to_heaplet goal.pre.spatial, find_points_to_heaplet goal.post.spatial with
+  | Some (HPointsTo (x, e'), p), Some (HPointsTo (y, e), q) ->
+      if x != y then None else
+      let new_pre_spatial = HSeparate (HPointsTo (x, e), p) in
+      let new_pre = { goal.pre with spatial = new_pre_spatial } in
+      let new_goal = { goal with pre = new_pre} in
+      Some { subgoals = [new_goal]; producer = CPtrAssign (EId x, EId e); rule = RWrite }
+  | _ -> None
 
 let apply_frame_rule (goal:goal) =
   if not (profiles_match goal.pre.spatial goal.post.spatial true) then
