@@ -73,18 +73,6 @@ let existential_vars gamma (p:hpredicate) (q:hpredicate) =
   let vars_q = IdSet.union vars_q_pure vars_q_spatial in
   IdSet.diff vars_q (IdSet.union gamma vars_p)
 
-(*   
-  def profilesMatch(pre: SFormula, post: SFormula, exact: Boolean): Boolean = {
-    if (exact) pre.profile.apps == post.profile.apps else multiSubset(post.profile.apps, pre.profile.apps)
-  } *)
-
-let profiles_match (pre:hpredicate_spatial) (post:hpredicate_spatial) (exact:bool) =
-  failwith "unimplemented"
-  (* if exact then pre.profile.apps = post.profile.apps else multiSubset post.profile.apps pre.profile.apps *)
-
-let find_matching_heaplets f is_match (pre: hpredicate_spatial) (post: hpredicate_spatial) =
-  failwith "unimplemented"
-
 let rec find_points_to_heaplet (pre: hpredicate_spatial) = 
   match pre with
   | HPointsTo (x, e) -> Some (HPointsTo (x, e), HEmpty)

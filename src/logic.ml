@@ -1,7 +1,6 @@
 open Ast
 
 open Z3
-(* open Z3.Expr *)
 
 let ctx = Z3.mk_context []
 
@@ -33,5 +32,3 @@ let implies (phi:hpredicate_pure) (psi:hpredicate_pure) : bool =
   match Solver.check solver [] with
   | UNSATISFIABLE -> true
   | _ -> false
-
-let remove_spatial_predicate spatial1 spatial2 = failwith "unimplemented"
