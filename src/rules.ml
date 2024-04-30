@@ -153,8 +153,6 @@ let apply_read_rule (goal:goal) =
       let new_post = { pure = new_post_pure; spatial = new_post_spatial } in
       let new_gamma = IdSet.add y goal.gamma in
       let new_goal = { pre = new_pre; post = new_post; gamma = new_gamma; program_vars = new_program_vars; universal_ghosts = goal.universal_ghosts; fname = goal.fname } in
-      print_endline "result of read rule applied";
-      pp_goal new_goal |> print_endline;
       let result = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
       if new_goal = goal then None else
       Some result

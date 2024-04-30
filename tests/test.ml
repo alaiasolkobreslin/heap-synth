@@ -29,20 +29,7 @@ let make_rule_test_subgoal
     (expected: rule_result option) =
   name >:: (fun _ ->
     let result = apply_rule rule goal in
-    match result, expected with
-    | Some r1, Some r2 -> 
-      begin
-        print_endline "expected subgoal";
-        let str1 = r1.subgoals |> List.hd |> pp_goal in
-        let str2 = r2.subgoals |> List.hd |> pp_goal in
-        r2.subgoals |> List.hd |> pp_goal |> print_endline;
-        print_endline "actual subgoal";
-        r1.subgoals |> List.hd |> pp_goal |> print_endline;
-        print_endline "are the strings equal?";
-        print_endline (string_of_bool (str1 = str2));
-        assert_equal r1.subgoals r2.subgoals
-      end
-    | _ -> assert_equal expected result)
+    assert_equal expected result)
 
 let make_rule_test_producer
     (name: string)
@@ -53,8 +40,6 @@ let make_rule_test_producer
     let result = apply_rule rule goal in
     match result, expected with
     | Some r1, Some r2 -> 
-      print_endline "\n\nproducer result";
-      print_endline (pp_cmd r1.producer);
       assert_equal r1.producer r2.producer
     | _ -> assert_equal expected result)
 
@@ -83,7 +68,7 @@ let make_synth_test
       print_endline "actual";
       print_endline (pp_cmd r);
       end
-    | _ -> print_endline "!!! OPTIONS MISMATCH");
+    | _ -> print_endline "OPTIONS MISMATCH");
     assert_equal expected result)
 
 let empty_env : (id, Heap_synth.Ast.result) Hashtbl.t = Hashtbl.create 10
