@@ -87,6 +87,7 @@ let rec find_points_to_heaplet (pre: hpredicate_spatial) =
   | HSeparate (p1, p2) ->
       (match find_points_to_heaplet p1 with
       | None -> None
+      | Some (h, HEmpty) -> Some (h, HEmpty)
       | Some (h, p) -> Some (h, HSeparate (p, p2)))
   | _ -> None
 

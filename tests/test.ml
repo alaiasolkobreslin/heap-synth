@@ -145,6 +145,36 @@ let read_rule_subgoal = {
   fname = "foo";
 }
 
+let write_rule_goal = {
+  pre = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "a"), HEmpty)
+  };
+  post = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+  };
+  gamma = IdSet.add "a" (IdSet.singleton "b");
+  program_vars = IdSet.singleton "b";
+  universal_ghosts = IdSet.empty;
+  fname = "foo";
+}
+
+let write_rule_subgoal = {
+  pre = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+  };
+  post = {
+    pure = HTrue;
+    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+  };
+  gamma = IdSet.add "a" (IdSet.singleton "b");
+  program_vars = IdSet.singleton "b";
+  universal_ghosts = IdSet.empty;
+  fname = "foo";
+}
+
 let empty_goal_result = {
   subgoals = [];
   producer = CSkip;
@@ -163,14 +193,18 @@ let read_rule_result = {
   rule = RRead;
 }
 
+let write_rule_result = {
+  subgoals = [write_rule_subgoal];
+  producer = CPtrAssign (EId "x", EId "b");
+  rule = RWrite;
+}
 
 let rules_tests = [
   make_rule_test "empty rule test" REmp empty_goal (Some empty_goal_result);
   make_rule_test "frame rule test" RFrame frame_rule_goal (Some frame_rule_result);
   make_rule_test "frame rule test 2" RFrame frame_rule_goal2 (Some frame_rule_result);
-  make_rule_test_subgoal "read rule test subgoal" RRead read_rule_goal (Some read_rule_result);
-  make_rule_test_producer "read rule test producer" RRead read_rule_goal (Some read_rule_result);
-  make_rule_test_rule "read rule test rule" RRead read_rule_goal (Some read_rule_result)
+  make_rule_test "read rule test" RRead read_rule_goal (Some read_rule_result);
+  make_rule_test "write rule test" RWrite write_rule_goal (Some write_rule_result);
 ]
 
 let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests]
