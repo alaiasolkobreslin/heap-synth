@@ -159,11 +159,11 @@ let read_rule_subgoal = {
 let write_rule_goal = {
   pre = {
     pure = HTrue;
-    spatial = HSeparate (HPointsTo ("x", "a"), HEmpty)
+    spatial = HPointsTo ("x", "a")
   };
   post = {
     pure = HTrue;
-    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+    spatial = HPointsTo ("x", "b")
   };
   gamma = IdSet.add "a" (IdSet.singleton "b");
   program_vars = IdSet.empty;
@@ -174,11 +174,11 @@ let write_rule_goal = {
 let write_rule_subgoal = {
   pre = {
     pure = HTrue;
-    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+    spatial = HPointsTo ("x", "b")
   };
   post = {
     pure = HTrue;
-    spatial = HSeparate (HPointsTo ("x", "b"), HEmpty)
+    spatial = HPointsTo ("x", "b")
   };
   gamma = IdSet.add "a" (IdSet.singleton "b");
   program_vars = IdSet.empty;
@@ -306,6 +306,81 @@ let swap_4_frame_rule_subgoal = {
   fname = "swap";
 }
 
+let swap_5_write_rule = {
+  pre = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x1")
+  };
+  post = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x0")
+  };
+  gamma = IdSet.add "x1" (IdSet.add "x0" (IdSet.add "x" (IdSet.singleton "y")));
+  program_vars = IdSet.add "x1" (IdSet.singleton "x0");
+  universal_ghosts = IdSet.empty;
+  fname = "swap";
+}
+
+let swap_5_write_rule_subgoal = {
+  pre = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x0")
+  };
+  post = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x0")
+  };
+  gamma = IdSet.add "x1" (IdSet.add "x0" (IdSet.add "x" (IdSet.singleton "y")));
+  program_vars = IdSet.add "x1" (IdSet.singleton "x0");
+  universal_ghosts = IdSet.empty;
+  fname = "swap";
+}
+
+let swap_6_frame_rule = {
+  pre = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x0")
+  };
+  post = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HPointsTo ("y", "x0")
+  };
+  gamma = IdSet.add "x1" (IdSet.add "x0" (IdSet.add "x" (IdSet.singleton "y")));
+  program_vars = IdSet.add "x1" (IdSet.singleton "x0");
+  universal_ghosts = IdSet.empty;
+  fname = "swap";
+}
+
+let swap_6_frame_rule_subgoal = {
+  pre = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HEmpty
+  };
+  post = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HEmpty
+  };
+  gamma = IdSet.add "x1" (IdSet.add "x0" (IdSet.add "x" (IdSet.singleton "y")));
+  program_vars = IdSet.add "x1" (IdSet.singleton "x0");
+  universal_ghosts = IdSet.empty;
+  fname = "swap";
+}
+
+let swap_7_emp_rule = {
+  pre = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HEmpty
+  };
+  post = {
+    pure = HAnd (HEq (EId "x1", EId "b"), HEq (EId "x0", (EId "a")));
+    spatial = HEmpty
+  };
+  gamma = IdSet.add "x1" (IdSet.add "x0" (IdSet.add "x" (IdSet.singleton "y")));
+  program_vars = IdSet.add "x1" (IdSet.singleton "x0");
+  universal_ghosts = IdSet.empty;
+  fname = "swap";
+}
+
 let empty_goal_result = {
   subgoals = [];
   producer = CSkip;
@@ -354,6 +429,24 @@ let swap_4_frame_rule_result = {
   rule = RFrame;
 }
 
+let swap_5_write_rule_result = {
+  subgoals = [swap_5_write_rule_subgoal];
+  producer = CPtrAssign (EId "y", EId "x0");
+  rule = RWrite;
+}
+
+let swap_6_frame_rule_result = {
+  subgoals = [swap_6_frame_rule_subgoal];
+  producer = CSkip;
+  rule = RFrame;
+}
+
+let swap_7_emp_rule_result = {
+  subgoals = [];
+  producer = CSkip;
+  rule = REmp;
+}
+
 let rules_tests = [
   make_rule_test "empty rule test" REmp empty_goal (Some empty_goal_result);
   make_rule_test "frame rule test" RFrame frame_rule_goal (Some frame_rule_result);
@@ -365,6 +458,9 @@ let rules_tests = [
   make_rule_test "swap 2 read rule test" RRead swap_2_read_rule (Some swap_2_read_rule_result);
   make_rule_test "swap 3 write rule test" RWrite swap_3_write_rule (Some swap_3_write_rule_result);
   make_rule_test "swap 4 frame rule test" RFrame swap_4_frame_rule (Some swap_4_frame_rule_result);
+  make_rule_test "swap 5 write rule test" RWrite swap_5_write_rule (Some swap_5_write_rule_result);
+  make_rule_test "swap 6 frame rule test" RFrame swap_6_frame_rule (Some swap_6_frame_rule_result);
+  make_rule_test "swap 7 emp rule test" REmp swap_7_emp_rule (Some swap_7_emp_rule_result);
 ]
 
 let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests]

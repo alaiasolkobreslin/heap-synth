@@ -159,7 +159,8 @@ let apply_write_rule (goal:goal) =
         find_points_to_heaplet_write goal.post.spatial goal.program_vars with
   | Some (HPointsTo (x, e'), p), Some (HPointsTo (y, e), q) ->
       if x != y then None else
-      let new_pre_spatial = HSeparate (HPointsTo (x, e), p) in
+        let new_pre_spatial = if p = HEmpty then HPointsTo (x, e) else HSeparate (HPointsTo (x, e), p) in
+      (* let new_pre_spatial = HSeparate (HPointsTo (x, e), p) in *)
       let new_pre = { goal.pre with spatial = new_pre_spatial } in
       let new_goal = { goal with pre = new_pre} in
       Some { subgoals = [new_goal]; producer = CPtrAssign (EId x, EId e); rule = RWrite }
@@ -171,11 +172,20 @@ let apply_frame_rule (goal:goal) =
     | HSeparate (p, r1), HSeparate (q, r2) ->
         begin
         if r1 = r2 then Some (p, q, r1) else
+        if p = q then Some (r1, r2, p) else
           match find_matching_separate r1 r2 with
           | Some (p', q', r) -> Some (HSeparate (p, HSeparate(p', r)), HSeparate (q, HSeparate(q', r)), r)
           | None -> None
         end
     | _ -> None in
+  if goal.pre.spatial = goal.post.spatial then 
+    begin
+      let new_pre = { goal.pre with spatial = HEmpty } in
+      let new_post = { goal.post with spatial = HEmpty } in
+      let new_goal = { goal with pre = new_pre; post = new_post } in
+      Some { subgoals = [new_goal]; producer = CSkip; rule = RFrame }
+    end
+  else
   match find_matching_separate goal.pre.spatial goal.post.spatial with
   | None -> None
   | Some (p, q, r) ->
