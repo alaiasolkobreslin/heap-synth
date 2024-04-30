@@ -482,13 +482,9 @@ let rules_tests = [
 ]
 
 let synth_tests = [
-  make_synth_test "swap easiest" swap_7_emp_rule (Some CSkip);
-  make_synth_test "swap easy" swap_6_frame_rule (Some (CSeq (CSkip, CSeq (CSkip, CSkip))));
-  make_synth_test "swap medium" swap_5_write_rule (Some (CSeq (CPtrAssign (EId "y", EId "x0"), CSeq (CSkip, CSkip))));
-  make_synth_test "swap 1" swap_1_read_rule (Some (CSeq (CLetAssign ("x0", EDeref (EId "x")), CPtrAssign (EId "x", EId "y"))));
+  make_synth_test "swap 1" swap_1_read_rule (Some (CSeq (CLetAssign("x0", EDeref (EId "x")) ,CSeq (CLetAssign ("x1", EDeref (EId "y")) ,CSeq (CPtrAssign (EId "x", EId "x1"), CPtrAssign (EId "y", EId "x0"))))));
 ]
 
-(* let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests; synth_tests] *)
-let suite = "test suite" >::: List.flatten [synth_tests]
+let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests; synth_tests]
 
 let _ = run_test_tt_main suite
