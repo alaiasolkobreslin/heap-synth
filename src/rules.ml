@@ -20,6 +20,14 @@ type rule_result = {
   rule: rule
 }
 
+let pp_goal goal =
+  let pp_id_set s = IdSet.fold (fun x acc -> acc ^ x ^ ", ") s "" in
+  "Pre: " ^ pp_hpredicate goal.pre ^ 
+  "\nPost: " ^ pp_hpredicate goal.post ^ 
+  "\nGamma: " ^ pp_id_set goal.gamma ^ 
+  "\nProgram vars: " ^ pp_id_set goal.program_vars ^ 
+  "\nUniversal ghosts: " ^ pp_id_set goal.universal_ghosts ^ "\n"
+
 let fresh_var vars =
   let rec fresh_var' i =
     let x = "x" ^ string_of_int i in
@@ -101,14 +109,15 @@ let apply_read_rule (goal:goal) =
       let y = fresh_var goal.program_vars in
       let new_program_vars = IdSet.add y goal.program_vars in
       let new_pre_pure = HAnd (HEq (EId y, EId e), goal.pre.pure) in
-      let new_pre_spatial = subst_spatial goal.pre.spatial x y in
+      let new_pre_spatial = subst_spatial goal.pre.spatial e y in
       let new_pre = { pure = new_pre_pure; spatial = new_pre_spatial } in
       let new_post_pure = HAnd (HEq (EId y, EId e), goal.post.pure) in
-      let new_post_spatial = subst_spatial goal.post.spatial x y in
+      let new_post_spatial = subst_spatial goal.post.spatial e y in
       let new_post = { pure = new_post_pure; spatial = new_post_spatial } in
-      let new_goal = { pre = new_pre; post = new_post; gamma = goal.gamma; program_vars = new_program_vars; universal_ghosts = goal.universal_ghosts; fname = goal.fname } in
-      let new_goal = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
-      Some new_goal
+      let new_gamma = IdSet.add y goal.gamma in
+      let new_goal = { pre = new_pre; post = new_post; gamma = new_gamma; program_vars = new_program_vars; universal_ghosts = goal.universal_ghosts; fname = goal.fname } in
+      let result = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
+      Some result
   | _ -> failwith "invalid return value for find_points_to_heaplet"
 
 

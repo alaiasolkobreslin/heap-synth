@@ -95,7 +95,7 @@ let pp_hpredicate hpred =
   let rec pp_hpredicate_spatial pred = match pred with
     | HEmpty -> "emp"
     | HPure e -> (pp_expr e)
-    | HPointsTo (id, id') -> id ^ " -> " ^ id'
+    | HPointsTo (id, id') -> id ^ " |-> " ^ id'
     | HSeparate (pred1, pred2) -> (pp_hpredicate_spatial pred1) ^ " * " ^ (pp_hpredicate_spatial pred2)
   in
   let rec pp_hpredicate_pure pred = match pred with
@@ -104,4 +104,4 @@ let pp_hpredicate hpred =
     | HAnd (pred1, pred2) -> (pp_hpredicate_pure pred1) ^ " /\\ " ^ (pp_hpredicate_pure pred2)
     | HEq (e1, e2) -> (pp_expr e1) ^ " = " ^ (pp_expr e2)
   in
-  (pp_hpredicate_pure hpred.pure) ^ " * " ^ (pp_hpredicate_spatial hpred.spatial)
+  (pp_hpredicate_pure hpred.pure) ^ " ; " ^ (pp_hpredicate_spatial hpred.spatial)

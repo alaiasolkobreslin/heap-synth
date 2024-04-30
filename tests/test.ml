@@ -29,7 +29,10 @@ let make_rule_test_subgoal
   name >:: (fun _ ->
     let result = apply_rule rule goal in
     match result, expected with
-    | Some r1, Some r2 -> assert_equal r1.subgoals r2.subgoals
+    | Some r1, Some r2 -> 
+      begin
+        assert_equal r1.subgoals r2.subgoals
+      end
     | _ -> assert_equal expected result)
 
 let make_rule_test_producer
@@ -129,11 +132,11 @@ let read_rule_goal = {
 
 let read_rule_subgoal = {
   pre = {
-    pure = HTrue;
+    pure = HAnd (HEq (EId "x0", (EId "a")), HTrue);
     spatial = HSeparate (HPointsTo ("x", "x0"), HEmpty)
   };
   post = {
-    pure = HTrue;
+    pure = HAnd (HEq (EId "x0", (EId "a")), HTrue);
     spatial = HEmpty
   };
   gamma = IdSet.add "x0" (IdSet.singleton "a");
