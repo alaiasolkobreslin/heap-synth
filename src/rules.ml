@@ -26,7 +26,8 @@ let pp_goal goal =
   "\nPost: " ^ pp_hpredicate goal.post ^ 
   "\nGamma: " ^ pp_id_set goal.gamma ^ 
   "\nProgram vars: " ^ pp_id_set goal.program_vars ^ 
-  "\nUniversal ghosts: " ^ pp_id_set goal.universal_ghosts ^ "\n"
+  "\nUniversal ghosts: " ^ pp_id_set goal.universal_ghosts ^
+  "\nFunction name: " ^ goal.fname
 
 let fresh_var vars =
   let rec fresh_var' i =
@@ -81,14 +82,41 @@ let existential_vars gamma (p:hpredicate) (q:hpredicate) =
   let vars_q = IdSet.union vars_q_pure vars_q_spatial in
   IdSet.diff vars_q (IdSet.union gamma vars_p)
 
-let rec find_points_to_heaplet (pre: hpredicate_spatial) = 
+let rec find_points_to_heaplet_read (pre: hpredicate_spatial) program_vars = 
+  match pre with
+  | HPointsTo (x, e) -> 
+      begin
+        match IdSet.find_opt e program_vars with
+        | None -> Some (HPointsTo (x, e), HEmpty)
+        | _ -> None
+      end
+  | HSeparate (p1, p2) ->
+      let p1_points_to = find_points_to_heaplet_read p1 program_vars in
+      let p2_points_to = find_points_to_heaplet_read p2 program_vars in
+      begin
+      match p1_points_to, p2_points_to with
+        | None, None -> None
+        | Some (h, HEmpty), _ -> Some (h, p2)
+        | _, Some (h, HEmpty) -> Some (h, p1)
+        | Some (h, p), _ -> Some (h, HSeparate (p, p2))
+        | _, Some (h, p) -> Some (h, HSeparate (p1, p))
+      end
+  | _ -> None
+
+let rec find_points_to_heaplet_write (pre: hpredicate_spatial) program_vars = 
   match pre with
   | HPointsTo (x, e) -> Some (HPointsTo (x, e), HEmpty)
   | HSeparate (p1, p2) ->
-      (match find_points_to_heaplet p1 with
-      | None -> None
-      | Some (h, HEmpty) -> Some (h, HEmpty)
-      | Some (h, p) -> Some (h, HSeparate (p, p2)))
+      let p1_points_to = find_points_to_heaplet_write p1 program_vars in
+      let p2_points_to = find_points_to_heaplet_write p2 program_vars in
+      begin
+      match p1_points_to, p2_points_to with
+        | None, None -> None
+        | Some (h, HEmpty), _ -> Some (h, p2)
+        | _, Some (h, HEmpty) -> Some (h, p1)
+        | Some (h, p), _ -> Some (h, HSeparate (p, p2))
+        | _, Some (h, p) -> Some (h, HSeparate (p1, p))
+      end
   | _ -> None
 
 let apply_emp_rule (goal:goal) =
@@ -104,26 +132,31 @@ let apply_emp_rule (goal:goal) =
     None
 
 let apply_read_rule (goal:goal) =
-  match find_points_to_heaplet goal.pre.spatial with
+  match find_points_to_heaplet_read goal.pre.spatial goal.program_vars with
   | None -> None
   | Some (HPointsTo (x, e), p) ->
       let y = fresh_var goal.program_vars in
       let new_program_vars = IdSet.add y goal.program_vars in
-      let new_pre_pure = HAnd (HEq (EId y, EId e), goal.pre.pure) in
+      let new_pre_pure = if goal.pre.pure = HTrue then (HEq (EId y, EId e)) 
+        else HAnd (HEq (EId y, EId e), goal.pre.pure) in
       let new_pre_spatial = subst_spatial goal.pre.spatial e y in
       let new_pre = { pure = new_pre_pure; spatial = new_pre_spatial } in
-      let new_post_pure = HAnd (HEq (EId y, EId e), goal.post.pure) in
+      let new_post_pure = if goal.post.pure = HTrue then (HEq (EId y, EId e)) 
+        else HAnd (HEq (EId y, EId e), goal.post.pure) in
       let new_post_spatial = subst_spatial goal.post.spatial e y in
       let new_post = { pure = new_post_pure; spatial = new_post_spatial } in
       let new_gamma = IdSet.add y goal.gamma in
       let new_goal = { pre = new_pre; post = new_post; gamma = new_gamma; program_vars = new_program_vars; universal_ghosts = goal.universal_ghosts; fname = goal.fname } in
+      print_endline "result of read rule applied";
+      pp_goal new_goal |> print_endline;
       let result = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
       Some result
   | _ -> failwith "invalid return value for find_points_to_heaplet"
 
 
 let apply_write_rule (goal:goal) =
-  match find_points_to_heaplet goal.pre.spatial, find_points_to_heaplet goal.post.spatial with
+  match find_points_to_heaplet_write goal.pre.spatial goal.program_vars, 
+        find_points_to_heaplet_write goal.post.spatial goal.program_vars with
   | Some (HPointsTo (x, e'), p), Some (HPointsTo (y, e), q) ->
       if x != y then None else
       let new_pre_spatial = HSeparate (HPointsTo (x, e), p) in
