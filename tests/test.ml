@@ -2,6 +2,7 @@ open OUnit2
 open Heap_synth.Ast
 open Heap_synth.Interp
 open Heap_synth.Rules
+open Heap_synth.Synthesize
 
 let make_interpret_expr_test
     (name: string)
@@ -67,6 +68,23 @@ let make_rule_test_rule
     match result, expected with
     | Some r1, Some r2 -> assert_equal r1.rule r2.rule
     | _ -> assert_equal expected result)
+
+let make_synth_test
+    (name: string)
+    (goal: goal)
+    (expected: cmd option) =
+  name >:: (fun _ ->
+    let result = heap_synth goal in
+    (match result, expected with
+    | Some r, Some e ->
+      begin
+      print_endline "expected";
+      print_endline (pp_cmd e);
+      print_endline "actual";
+      print_endline (pp_cmd r);
+      end
+    | _ -> print_endline "!!! OPTIONS MISMATCH");
+    assert_equal expected result)
 
 let empty_env : (id, Heap_synth.Ast.result) Hashtbl.t = Hashtbl.create 10
 let empty_heap : (int, Heap_synth.Ast.result) Hashtbl.t = Hashtbl.create 10
@@ -463,6 +481,14 @@ let rules_tests = [
   make_rule_test "swap 7 emp rule test" REmp swap_7_emp_rule (Some swap_7_emp_rule_result);
 ]
 
-let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests]
+let synth_tests = [
+  make_synth_test "swap easiest" swap_7_emp_rule (Some CSkip);
+  make_synth_test "swap easy" swap_6_frame_rule (Some (CSeq (CSkip, CSeq (CSkip, CSkip))));
+  make_synth_test "swap medium" swap_5_write_rule (Some (CSeq (CPtrAssign (EId "y", EId "x0"), CSeq (CSkip, CSkip))));
+  make_synth_test "swap 1" swap_1_read_rule (Some (CSeq (CLetAssign ("x0", EDeref (EId "x")), CPtrAssign (EId "x", EId "y"))));
+]
+
+(* let suite = "test suite" >::: List.flatten [interpret_tests; rules_tests; synth_tests] *)
+let suite = "test suite" >::: List.flatten [synth_tests]
 
 let _ = run_test_tt_main suite

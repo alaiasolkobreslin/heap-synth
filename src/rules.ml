@@ -29,6 +29,12 @@ let pp_goal goal =
   "\nUniversal ghosts: " ^ pp_id_set goal.universal_ghosts ^
   "\nFunction name: " ^ goal.fname
 
+let pp_rule = function
+  | REmp -> "Emp"
+  | RRead -> "Read"
+  | RWrite -> "Write"
+  | RFrame -> "Frame"
+
 let fresh_var vars =
   let rec fresh_var' i =
     let x = "x" ^ string_of_int i in
@@ -150,6 +156,7 @@ let apply_read_rule (goal:goal) =
       print_endline "result of read rule applied";
       pp_goal new_goal |> print_endline;
       let result = { subgoals = [new_goal]; producer = CLetAssign (y, EDeref (EId x)); rule = RRead } in
+      if new_goal = goal then None else
       Some result
   | _ -> failwith "invalid return value for find_points_to_heaplet"
 
@@ -163,6 +170,7 @@ let apply_write_rule (goal:goal) =
       (* let new_pre_spatial = HSeparate (HPointsTo (x, e), p) in *)
       let new_pre = { goal.pre with spatial = new_pre_spatial } in
       let new_goal = { goal with pre = new_pre} in
+      if new_goal = goal then None else
       Some { subgoals = [new_goal]; producer = CPtrAssign (EId x, EId e); rule = RWrite }
   | _ -> None
 
